@@ -1,0 +1,58 @@
+{
+  "entities": {
+    "Film": {
+      "title": "Film",
+      "description": "A film featured in the festival",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "director": { "type": "string" },
+        "genre": { "type": "array", "items": { "type": "string" } },
+        "duration": { "type": "integer" },
+        "rating": { "type": "string" },
+        "imageUrl": { "type": "string" }
+      },
+      "required": ["title", "director", "imageUrl"]
+    },
+    "Screening": {
+      "title": "Screening",
+      "description": "A specific screening of a film",
+      "type": "object",
+      "properties": {
+        "filmId": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "venue": { "type": "string" },
+        "price": { "type": "number" }
+      },
+      "required": ["filmId", "date", "venue", "price"]
+    },
+    "Ticket": {
+      "title": "Ticket",
+      "description": "A ticket purchased by a user",
+      "type": "object",
+      "properties": {
+        "filmId": { "type": "string" },
+        "screeningId": { "type": "string" },
+        "userId": { "type": "string" },
+        "purchaseDate": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["active", "used", "cancelled"] }
+      },
+      "required": ["filmId", "screeningId", "userId", "purchaseDate", "status"]
+    }
+  },
+  "firestore": {
+    "/films/{filmId}": {
+      "schema": "Film",
+      "description": "Collection of films"
+    },
+    "/screenings/{screeningId}": {
+      "schema": "Screening",
+      "description": "Collection of screenings"
+    },
+    "/tickets/{ticketId}": {
+      "schema": "Ticket",
+      "description": "Collection of user tickets"
+    }
+  }
+}

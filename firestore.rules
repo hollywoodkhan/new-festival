@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidFilm(data) {
+      return data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.director is string && data.director.size() > 0 &&
+             data.imageUrl is string && data.imageUrl.matches("^https?://.*");
+    }
+
+    function isValidTicket(data) {
+      return data.userId == request.auth.uid &&
+             data.status in ['active', 'used', 'cancelled'] &&
+             data.filmId is string &&
+             data.screeningId is string;
+    }
+
+    // Films: Publicly readable, admin writable
+    match /films/{filmId} {
+      allow read: if true;
+      allow write: if isAuthenticated() && request.auth.token.email == "bollywoodkhan@gmail.com";
+    }
+
+    // Screenings: Publicly readable, admin writable
+    match /screenings/{screeningId} {
+      allow read: if true;
+      allow write: if isAuthenticated() && request.auth.token.email == "bollywoodkhan@gmail.com";
+    }
+
+    // Tickets: Owner readable/writable
+    match /tickets/{ticketId} {
+      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && isValidTicket(request.resource.data);
+      allow update: if isAuthenticated() && isOwner(resource.data.userId) && isValidTicket(request.resource.data);
+      allow delete: if false; // Tickets shouldn't be deleted, only cancelled
+    }
+  }
+}
